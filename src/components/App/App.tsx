@@ -101,10 +101,21 @@ export default function App() {
           className={css.button}
           type="button"
           onClick={() => setIsModalOpen(true)}
+          disabled={createMutation.isPending}
         >
-          Create note +
+          {createMutation.isPending ? 'Creating...' : 'Create note +'}
         </button>
       </header>
+
+      {createMutation.isError && (
+        <p>Error creating note: {createMutation.error.message}</p>
+      )}
+
+      {deleteMutation.isPending && <p>Deleting note...</p>}
+
+      {deleteMutation.isError && (
+        <p>Error deleting note: {deleteMutation.error.message}</p>
+      )}
 
       {data && data.notes.length > 0 && (
         <NoteList notes={data.notes} onDelete={handleDelete} />
