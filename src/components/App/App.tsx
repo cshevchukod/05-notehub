@@ -5,13 +5,10 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useDebouncedCallback } from 'use-debounce';
 
-import {
-  createNote,
-  deleteNote,
-  fetchNotes,
-  type CreateNoteData,
-} from '../../services/noteService';
+import { createNote, deleteNote, fetchNotes } from '../../services/noteService';
+import type { NewNote } from '../../types/note';
 
 import NoteList from '../NoteList/NoteList';
 import Pagination from '../Pagination/Pagination';
@@ -23,6 +20,7 @@ import css from './App.module.css';
 
 export default function App() {
   const [page, setPage] = useState(1);
+  const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -60,16 +58,21 @@ export default function App() {
     },
   });
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useDebouncedCallback((value: string) => {
     setSearch(value);
     setPage(1);
+  }, 300);
+
+  const handleSearchChange = (value: string) => {
+    setInputValue(value);
+    handleSearch(value);
   };
 
   const handleDelete = (noteId: string) => {
     deleteMutation.mutate(noteId);
   };
 
-  const handleCreateNote = (values: CreateNoteData) => {
+  const handleCreateNote = (values: NewNote) => {
     createMutation.mutate(values);
   };
 
@@ -83,8 +86,8 @@ export default function App() {
 
   return (
     <div className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox onSearch={handleSearch} />
+      <header className={css.toolbar}>
+        <SearchBox value={inputValue} onChange={handleSearchChange} />
 
         {data && data.totalPages > 1 && (
           <Pagination
@@ -101,9 +104,11 @@ export default function App() {
         >
           Create note +
         </button>
-      </div>
+      </header>
 
-      {data && <NoteList notes={data.notes} onDelete={handleDelete} />}
+      {data && data.notes.length > 0 && (
+        <NoteList notes={data.notes} onDelete={handleDelete} />
+      )}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
