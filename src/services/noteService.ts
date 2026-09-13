@@ -8,8 +8,6 @@ const api = axios.create({
   },
 });
 
-console.log(import.meta.env.VITE_NOTEHUB_TOKEN);
-
 interface FetchNotesParams {
   page: number;
   perPage: number;
